@@ -1,27 +1,32 @@
 import React from 'react';
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route
-} from 'react-router-dom';
-import LandingPage from './components/LandingPage';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
 import LoginPage from './components/LoginPage';
 import SignupPage from './components/SignupPage';
+import LandingPage from './components/LandingPage';
+import Dashboard from './components/Dashboard';
+import PrivateRoute from './components/PrivateRoute';
 import './App.css';
 
 function App() {
   return (
     <Router>
-      <div className="App">
+      <AuthProvider>
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
-          {/* Add other routes here, e.g., for shop, about, product details, etc. */}
-          {/* <Route path="/shop" element={<ShopPage />} /> */}
-          {/* <Route path="/about" element={<AboutPage />} /> */}
+          <Route 
+            path="/dashboard" 
+            element={
+              <PrivateRoute>
+                <Dashboard />
+              </PrivateRoute>
+            } 
+          />
+          <Route path="*" element={<Navigate to="/" />} />
         </Routes>
-      </div>
+      </AuthProvider>
     </Router>
   );
 }

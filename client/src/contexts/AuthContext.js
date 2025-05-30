@@ -1,56 +1,85 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
+const API_URL = 'http://localhost:5001/api/auth';
+
 // Create Auth Context
 const AuthContext = createContext(null);
+
+// Custom hook to use Auth Context
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
 
 // Auth Provider Component
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); // To handle initial auth state check
+  const [loading, setLoading] = useState(true);
 
-  // Simulate checking auth status on component mount (e.g., from localStorage, API)
   useEffect(() => {
-    // Replace with actual auth checking logic
-    // For example, check if a token exists in localStorage
+    // Check if user is logged in
     const token = localStorage.getItem('authToken');
-    if (token) {
-      // Here you would typically verify the token with a backend and get user info
-      // For this example, we'll just simulate a logged-in user if a token exists
-      setUser({ name: 'Demo User', token });
+    const userData = localStorage.getItem('userData');
+    if (token && userData) {
+      setUser(JSON.parse(userData));
     }
     setLoading(false);
   }, []);
 
   const login = async (email, password) => {
-    // Replace with actual API call for login
-    // For now, simulate a successful login
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const fakeUser = { name: 'Logged In User', email };
-        localStorage.setItem('authToken', 'fake-jwt-token'); // Store a dummy token
-        setUser(fakeUser);
-        resolve(fakeUser);
-      }, 1000);
-    });
+    try {
+      const response = await fetch(`${API_URL}/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to login');
+      }
+
+      localStorage.setItem('authToken', data.token);
+      localStorage.setItem('userData', JSON.stringify(data.user));
+      setUser(data.user);
+    } catch (error) {
+      throw new Error(error.message || 'Failed to login');
+    }
   };
 
   const signup = async (name, email, password) => {
-    // Replace with actual API call for signup
-    // For now, simulate a successful signup
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const fakeUser = { name, email };
-        // Potentially log them in directly or store token
-        localStorage.setItem('authToken', 'fake-jwt-token-signup');
-        setUser(fakeUser);
-        resolve(fakeUser);
-      }, 1000);
-    });
+    try {
+      const response = await fetch(`${API_URL}/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to create account');
+      }
+
+      localStorage.setItem('authToken', data.token);
+      localStorage.setItem('userData', JSON.stringify(data.user));
+      setUser(data.user);
+    } catch (error) {
+      throw new Error(error.message || 'Failed to create account');
+    }
   };
 
   const logout = () => {
-    // Replace with actual logout logic (e.g., invalidate token on backend)
     localStorage.removeItem('authToken');
+    localStorage.removeItem('userData');
     setUser(null);
   };
 
@@ -59,17 +88,12 @@ export const AuthProvider = ({ children }) => {
     loading,
     login,
     signup,
-    logout,
+    logout
   };
 
-  return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
-};
-
-// Custom Hook to use Auth Context
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
+  return (
+    <AuthContext.Provider value={value}>
+      {!loading && children}
+    </AuthContext.Provider>
+  );
 }; 
