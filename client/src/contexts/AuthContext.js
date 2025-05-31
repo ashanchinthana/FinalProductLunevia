@@ -29,9 +29,10 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const login = async (email, password) => {
+  const login = async (email, password, isAdmin = false) => {
     try {
-      const response = await fetch(`${API_URL}/login`, {
+      const endpoint = isAdmin ? `${API_URL}/admin/login` : `${API_URL}/login`;
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -53,14 +54,19 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const signup = async (name, email, password) => {
+  const signup = async (name, email, password, isAdmin = false, adminCode = '') => {
     try {
-      const response = await fetch(`${API_URL}/register`, {
+      const endpoint = isAdmin ? `${API_URL}/admin/register` : `${API_URL}/register`;
+      const body = isAdmin 
+        ? { name, email, password, adminCode }
+        : { name, email, password };
+
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify(body),
       });
 
       const data = await response.json();
@@ -88,7 +94,8 @@ export const AuthProvider = ({ children }) => {
     loading,
     login,
     signup,
-    logout
+    logout,
+    isAdmin: user?.role === 'admin'
   };
 
   return (

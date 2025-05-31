@@ -5,9 +5,12 @@ const { auth } = require('../middleware/auth');
 
 const router = express.Router();
 
+// Admin registration code (should be in environment variables)
+const ADMIN_CODE = 'ADMIN_SECRET_CODE_123';
+
 // Generate JWT Token
 const generateToken = (userId) => {
-  return jwt.sign({ userId }, process.env.JWT_SECRET, {
+  return jwt.sign({ userId }, process.env.JWT_SECRET || 'your-default-secret', {
     expiresIn: '7d',
   });
 };
@@ -29,29 +32,73 @@ router.post('/register', async (req, res) => {
     user = new User({
       name,
       email,
-      password
+      password,
+      role: 'user' // Default role
     });
 
     await user.save();
 
     // Create JWT token
-    const token = jwt.sign(
-      { userId: user._id },
-      process.env.JWT_SECRET || 'your-default-secret',
-      { expiresIn: '24h' }
-    );
+    const token = generateToken(user._id);
 
     res.status(201).json({
       token,
       user: {
         id: user._id,
         name: user.name,
-        email: user.email
+        email: user.email,
+        role: user.role
       }
     });
   } catch (error) {
     console.error('Registration error:', error);
     res.status(500).json({ message: 'Error registering user' });
+  }
+});
+
+// @route   POST /api/auth/admin/register
+// @desc    Register a new admin
+// @access  Public
+router.post('/admin/register', async (req, res) => {
+  try {
+    const { name, email, password, adminCode } = req.body;
+
+    // Verify admin registration code
+    if (adminCode !== ADMIN_CODE) {
+      return res.status(401).json({ message: 'Invalid admin registration code' });
+    }
+
+    // Check if user already exists
+    let user = await User.findOne({ email });
+    if (user) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
+
+    // Create new admin user
+    user = new User({
+      name,
+      email,
+      password,
+      role: 'admin'
+    });
+
+    await user.save();
+
+    // Create JWT token
+    const token = generateToken(user._id);
+
+    res.status(201).json({
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    console.error('Admin registration error:', error);
+    res.status(500).json({ message: 'Error registering admin' });
   }
 });
 
@@ -74,23 +121,67 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
+    // Check if user is not an admin
+    if (user.role === 'admin') {
+      return res.status(401).json({ message: 'Please use admin login' });
+    }
+
     // Create JWT token
-    const token = jwt.sign(
-      { userId: user._id },
-      process.env.JWT_SECRET || 'your-default-secret',
-      { expiresIn: '24h' }
-    );
+    const token = generateToken(user._id);
 
     res.json({
       token,
       user: {
         id: user._id,
         name: user.name,
-        email: user.email
+        email: user.email,
+        role: user.role
       }
     });
   } catch (error) {
     console.error('Login error:', error);
+    res.status(500).json({ message: 'Error logging in' });
+  }
+});
+
+// @route   POST /api/auth/admin/login
+// @desc    Login admin
+// @access  Public
+router.post('/admin/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Find user by email
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    // Check password
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    // Check if user is admin
+    if (user.role !== 'admin') {
+      return res.status(401).json({ message: 'Access denied. Admin only.' });
+    }
+
+    // Create JWT token
+    const token = generateToken(user._id);
+
+    res.json({
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    console.error('Admin login error:', error);
     res.status(500).json({ message: 'Error logging in' });
   }
 });
@@ -100,20 +191,11 @@ router.post('/login', async (req, res) => {
 // @access  Private
 router.get('/me', auth, async (req, res) => {
   try {
-    res.json({
-      user: {
-        id: req.user._id,
-        name: req.user.name,
-        email: req.user.email,
-        role: req.user.role,
-        createdAt: req.user.createdAt
-      }
-    });
+    const user = await User.findById(req.user.id).select('-password');
+    res.json({ user });
   } catch (error) {
     console.error('Get user error:', error);
-    res.status(500).json({
-      message: 'Server error'
-    });
+    res.status(500).json({ message: 'Server error' });
   }
 });
 

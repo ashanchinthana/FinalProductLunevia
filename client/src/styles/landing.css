@@ -195,7 +195,7 @@
 }
 
 .trend-image.accessories {
-  background-image: url('../images/accessories.jpg');
+  background-image: url('../images/Essentials.jpg');
 }
 
 .trend-image.designer {
@@ -270,7 +270,7 @@
   max-width: 1200px;
   margin: 0 auto;
 }
-
+/*summer card*/
 .collection-card {
   position: relative;
   height: 400px;
@@ -278,7 +278,27 @@
   overflow: hidden;
   background-size: cover;
   background-position: center;
-  background-image: url('../images/accessories.jpg');
+  background-image: url('../images/summer1.jpg');}
+
+  .collection-card1{
+    position: relative;
+    height: 400px;
+    border-radius: 15px;
+    overflow: hidden;
+    background-size: cover;
+    background-position: center;
+    background-image: url('../images/Essentials.jpg');
+}
+
+
+.collection-card2{
+    position: relative;
+    height: 400px;
+    border-radius: 15px;
+    overflow: hidden;
+    background-size: cover;
+    background-position: center;
+    background-image: url('../images/jewelryaccessories.jpg');
 }
 
 .collection-card.large {

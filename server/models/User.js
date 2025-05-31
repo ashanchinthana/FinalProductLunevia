@@ -21,15 +21,18 @@ const userSchema = new mongoose.Schema({
   role: {
     type: String,
     enum: ['user', 'admin'],
-    default: 'user',
+    default: 'user'
   },
   isActive: {
     type: Boolean,
-    default: true,
+    default: true
   },
   createdAt: {
     type: Date,
     default: Date.now
+  },
+  lastLogin: {
+    type: Date
   }
 });
 
@@ -49,6 +52,11 @@ userSchema.pre('save', async function(next) {
 // Method to compare password for login
 userSchema.methods.comparePassword = async function(candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
+};
+
+// Method to check if user is admin
+userSchema.methods.isAdmin = function() {
+  return this.role === 'admin';
 };
 
 const User = mongoose.model('User', userSchema);

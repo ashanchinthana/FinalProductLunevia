@@ -53,15 +53,7 @@ const LandingPage = () => {
           </div>
           <div className="hero-visual">
             <div className="fashion-card">
-              <div className="card-image">
-                <span className="seasonal-tag">New Season</span>
-              </div>
-              <div className="floating-elements">
-                <span className="float-item">👗</span>
-                <span className="float-item">👔</span>
-                <span className="float-item">👜</span>
-                <span className="float-item">👠</span>
-              </div>
+              
             </div>
           </div>
         </div>
@@ -78,7 +70,7 @@ const LandingPage = () => {
           </div>
           <div className="trend-card">
             <div className="trend-image accessories"></div>
-            <h3>Accessories</h3>
+            <h3> Accessories</h3>
             <p>Complete Your Look</p>
           </div>
           <div className="trend-card">
@@ -121,14 +113,14 @@ const LandingPage = () => {
         <div className="collection-grid">
           <div className="collection-card large">
             <div className="collection-content">
-              <h3>Summer '24</h3>
+              <h3>Summer '25</h3>
               <p>Discover the essence of summer</p>
               <Link to="/collection/summer" className="collection-link">
                 Explore →
               </Link>
             </div>
           </div>
-          <div className="collection-card">
+          <div className="collection-card1">
             <div className="collection-content">
               <h3>Essentials</h3>
               <p>Timeless pieces</p>
@@ -137,9 +129,9 @@ const LandingPage = () => {
               </Link>
             </div>
           </div>
-          <div className="collection-card">
+          <div className="collection-card2">
             <div className="collection-content">
-              <h3>Accessories</h3>
+              <h3>Jewelry Accessories</h3>
               <p>Complete your look</p>
               <Link to="/collection/accessories" className="collection-link">
                 Discover →
@@ -167,12 +159,7 @@ const LandingPage = () => {
           <div className="footer-brand">
             <h3>LUNEVIA</h3>
             <p>Redefining luxury fashion</p>
-            <div className="social-links">
-              <a href="#instagram">📸</a>
-              <a href="#facebook">👥</a>
-              <a href="#twitter">🐦</a>
-              <a href="#pinterest">📌</a>
-            </div>
+            
           </div>
           <div className="footer-links">
             <div className="footer-section">
@@ -205,7 +192,7 @@ const LandingPage = () => {
           </div>
         </div>
         <div className="footer-bottom">
-          <p>&copy; 2024 LUNEVIA. All rights reserved.</p>
+          <p>&copy; 2025 LUNEVIA. All rights reserved.</p>
           <div className="legal-links">
             <a href="#privacy">Privacy Policy</a>
             <a href="#terms">Terms of Service</a>
