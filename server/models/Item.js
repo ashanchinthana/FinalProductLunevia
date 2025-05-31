@@ -15,29 +15,18 @@ const itemSchema = new mongoose.Schema({
     required: true,
     min: 0
   },
-  category: {
-    type: String,
-    required: true,
-    enum: ['Summer', 'Essentials', 'Accessories', 'Jewelry']
-  },
   imageUrl: {
+    type: String,
+    required: true
+  },
+  category: {
     type: String,
     required: true
   },
   stock: {
     type: Number,
     required: true,
-    min: 0,
-    default: 0
-  },
-  isAvailable: {
-    type: Boolean,
-    default: true
-  },
-  createdBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
+    min: 0
   },
   createdAt: {
     type: Date,

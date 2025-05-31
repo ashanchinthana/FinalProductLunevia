@@ -6,13 +6,20 @@ import SignupPage from './components/SignupPage';
 import LandingPage from './components/LandingPage';
 import Dashboard from './components/Dashboard';
 import PrivateRoute from './components/PrivateRoute';
+import adminRoutes from './routes/adminRoutes';
 import './App.css';
 
 function App() {
   return (
-    <Router>
-      <AuthProvider>
+    <AuthProvider>
+      <Router>
         <Routes>
+          {/* Admin routes */}
+          {adminRoutes.map((route, index) => (
+            <Route key={index} path={route.path} element={route.element} />
+          ))}
+          
+          {/* Add your other routes here */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
@@ -26,8 +33,8 @@ function App() {
           />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
-      </AuthProvider>
-    </Router>
+      </Router>
+    </AuthProvider>
   );
 }
 

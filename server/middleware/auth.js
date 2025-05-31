@@ -1,33 +1,39 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
+// Default JWT secret if not set in environment
+const JWT_SECRET = process.env.JWT_SECRET || 'lunevia_secret_key_2024';
+
 exports.auth = async (req, res, next) => {
-  let token;
-
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith('Bearer')
-  ) {
-    token = req.headers.authorization.split(' ')[1];
-  }
-  // else if (req.cookies.token) { // Alternative: get token from cookie
-  //   token = req.cookies.token;
-  // }
-
-  if (!token) {
-    return res.status(401).json({ message: 'Not authorized, no token' });
-  }
-
   try {
+    let token;
+
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+      // Get token from header
+      token = req.headers.authorization.split(' ')[1];
+    }
+
+    if (!token) {
+      return res.status(401).json({ message: 'Not authorized, no token' });
+    }
+
     // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET);
 
     // Get user from the token
-    req.user = await User.findById(decoded.userId).select('-password');
+    const user = await User.findById(decoded.userId).select('-password');
 
-    if (!req.user) {
-        return res.status(401).json({ message: 'Not authorized, user not found' });
+    if (!user) {
+      return res.status(401).json({ message: 'Not authorized, user not found' });
     }
+
+    // Attach user to request
+    req.user = {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role
+    };
 
     next();
   } catch (error) {

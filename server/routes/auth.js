@@ -5,12 +5,15 @@ const { auth } = require('../middleware/auth');
 
 const router = express.Router();
 
+// Default JWT secret if not set in environment
+const JWT_SECRET = process.env.JWT_SECRET || 'lunevia_secret_key_2024';
+
 // Admin registration code (should be in environment variables)
-const ADMIN_CODE = 'ADMIN_SECRET_CODE_123';
+const ADMIN_CODE = process.env.ADMIN_CODE || 'ADMIN_SECRET_CODE_123';
 
 // Generate JWT Token
 const generateToken = (userId) => {
-  return jwt.sign({ userId }, process.env.JWT_SECRET || 'your-default-secret', {
+  return jwt.sign({ userId }, JWT_SECRET, {
     expiresIn: '7d',
   });
 };
@@ -165,7 +168,7 @@ router.post('/admin/login', async (req, res) => {
 
     // Check if user is admin
     if (user.role !== 'admin') {
-      return res.status(401).json({ message: 'Access denied. Admin only.' });
+      return res.status(401).json({ message: 'Not authorized as admin' });
     }
 
     // Create JWT token
