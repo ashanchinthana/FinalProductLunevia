@@ -19,8 +19,8 @@ const LandingPage = () => {
       <nav className="fashion-nav">
         <div className="nav-container">
           <Link to="/" className="brand">
-            <span className="brand-icon">✨</span>
-            LUNEVIA
+            <span className="brand-icon">✨LUNEVIA</span>
+            
           </Link>
           <div className="nav-menu">
             <a href="#collections">Collections</a>

@@ -97,6 +97,11 @@ const Products = () => {
         setError('Image size should be less than 5MB');
         return;
       }
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setError('Please upload an image file');
+        return;
+      }
       setSelectedImage(file);
       setImagePreview(URL.createObjectURL(file));
       setError('');
@@ -139,6 +144,12 @@ const Products = () => {
     }
   };
 
+  // Add image URL validation function
+  const isValidImageUrl = (url) => {
+    if (!url) return false;
+    return url.match(/\.(jpeg|jpg|gif|png)$/) != null || url.startsWith('/uploads/');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -156,6 +167,8 @@ const Products = () => {
         if (!imageUrl) {
           throw new Error('Failed to upload image');
         }
+      } else if (imageUrl && !isValidImageUrl(imageUrl)) {
+        throw new Error('Please provide a valid image URL (must end with .jpg, .jpeg, .png, or .gif)');
       }
 
       if (!imageUrl && !selectedImage) {
@@ -262,7 +275,8 @@ const Products = () => {
                   : item.imageUrl}
                 alt={item.name}
                 onError={(e) => {
-                  e.target.src = 'https://via.placeholder.com/200';
+                  e.target.onerror = null; // Prevent infinite loop
+                  e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNFNUU1RTUiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTZweCIgZmlsbD0iIzY2NjY2NiI+SW1hZ2Ugbm90IGF2YWlsYWJsZTwvdGV4dD48L3N2Zz4=';
                 }}
               />
               <CardContent>

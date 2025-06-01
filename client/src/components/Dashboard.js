@@ -96,9 +96,16 @@ const Dashboard = () => {
                 <CardMedia
                   component="img"
                   height="200"
-                  image={item.imageUrl}
+                  image={item.imageUrl.startsWith('/uploads/') 
+                    ? `http://localhost:5001${item.imageUrl}`
+                    : item.imageUrl}
                   alt={item.name}
                   sx={{ objectFit: 'cover' }}
+                  onError={(e) => {
+                    console.warn(`Failed to load image for ${item.name}:`, item.imageUrl);
+                    e.target.onerror = null; // Prevent infinite loop
+                    e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNFNUU1RTUiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTZweCIgZmlsbD0iIzY2NjY2NiI+SW1hZ2Ugbm90IGF2YWlsYWJsZTwvdGV4dD48L3N2Zz4=';
+                  }}
                 />
                 <CardContent sx={{ flexGrow: 1 }}>
                   <Typography gutterBottom variant="h6" component="h2">
