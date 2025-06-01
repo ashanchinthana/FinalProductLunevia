@@ -37,6 +37,7 @@ const Dashboard = () => {
   const [cartOpen, setCartOpen] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(null);
   const [paymentDetails, setPaymentDetails] = useState({
     cardNumber: '',
     expiryDate: '',
@@ -61,6 +62,30 @@ const Dashboard = () => {
       setLoading(false);
     } catch (error) {
       console.error('Error fetching items:', error);
+      setLoading(false);
+    }
+  };
+
+  const handleCategoryClick = async (category) => {
+    try {
+      setLoading(true);
+      if (selectedCategory === category) {
+        // If clicking the same category again, show all items
+        setSelectedCategory(null);
+        await fetchItems();
+      } else {
+        setSelectedCategory(category);
+        const response = await fetch(`http://localhost:5001/api/items/category/${category}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('authToken')}`
+          }
+        });
+        const data = await response.json();
+        setItems(data);
+      }
+    } catch (error) {
+      console.error('Error fetching category items:', error);
+    } finally {
       setLoading(false);
     }
   };
@@ -183,66 +208,96 @@ const Dashboard = () => {
                 <Chip
                   label={category}
                   clickable
-                  color="primary"
-                  variant="outlined"
-                  onClick={() => {/* Add filter functionality */}}
+                  color={selectedCategory === category ? "primary" : "default"}
+                  variant={selectedCategory === category ? "filled" : "outlined"}
+                  onClick={() => handleCategoryClick(category)}
+                  sx={{
+                    '&:hover': {
+                      backgroundColor: selectedCategory === category ? 'primary.dark' : 'primary.light',
+                    }
+                  }}
                 />
               </Grid>
             ))}
+            {selectedCategory && (
+              <Grid item>
+                <Chip
+                  label="Clear Filter"
+                  clickable
+                  color="secondary"
+                  onClick={() => handleCategoryClick(selectedCategory)}
+                  sx={{ ml: 1 }}
+                />
+              </Grid>
+            )}
           </Grid>
         </Box>
 
         {/* Items Grid */}
         <Grid container spacing={3}>
-          {items.map((item) => (
-            <Grid item xs={12} sm={6} md={4} key={item._id}>
-              <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                <CardMedia
-                  component="img"
-                  height="200"
-                  image={item.imageUrl.startsWith('/uploads/') 
-                    ? `http://localhost:5001${item.imageUrl}`
-                    : item.imageUrl}
-                  alt={item.name}
-                  sx={{ objectFit: 'cover' }}
-                  onError={(e) => {
-                    console.warn(`Failed to load image for ${item.name}:`, item.imageUrl);
-                    e.target.onerror = null;
-                    e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNFNUU1RTUiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTZweCIgZmlsbD0iIzY2NjY2NiI+SW1hZ2Ugbm90IGF2YWlsYWJsZTwvdGV4dD48L3N2Zz4=';
-                  }}
-                />
-                <CardContent sx={{ flexGrow: 1 }}>
-                  <Typography gutterBottom variant="h6" component="h2">
-                    {item.name}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {item.description}
-                  </Typography>
-                  <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography variant="h6" color="primary">
-                      ${item.price}
+          {loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', mt: 4 }}>
+              <CircularProgress />
+            </Box>
+          ) : items.length > 0 ? (
+            items.map((item) => (
+              <Grid item xs={12} sm={6} md={4} key={item._id}>
+                <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                  <CardMedia
+                    component="img"
+                    height="200"
+                    image={item.imageUrl.startsWith('/uploads/') 
+                      ? `http://localhost:5001${item.imageUrl}`
+                      : item.imageUrl}
+                    alt={item.name}
+                    sx={{ objectFit: 'cover' }}
+                    onError={(e) => {
+                      console.warn(`Failed to load image for ${item.name}:`, item.imageUrl);
+                      e.target.onerror = null;
+                      e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNFNUU1RTUiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTZweCIgZmlsbD0iIzY2NjY2NiI+SW1hZ2Ugbm90IGF2YWlsYWJsZTwvdGV4dD48L3N2Zz4=';
+                    }}
+                  />
+                  <CardContent sx={{ flexGrow: 1 }}>
+                    <Typography gutterBottom variant="h6" component="h2">
+                      {item.name}
                     </Typography>
-                    <Chip
-                      label={item.category}
-                      size="small"
-                      color="primary"
-                      variant="outlined"
-                    />
-                  </Box>
-                </CardContent>
-                <CardActions>
-                  <Button 
-                    size="small" 
-                    color="primary" 
-                    fullWidth
-                    onClick={() => addToCart(item)}
-                  >
-                    Add to Cart
-                  </Button>
-                </CardActions>
-              </Card>
-            </Grid>
-          ))}
+                    <Typography variant="body2" color="text.secondary">
+                      {item.description}
+                    </Typography>
+                    <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography variant="h6" color="primary">
+                        ${item.price}
+                      </Typography>
+                      <Chip
+                        label={item.category}
+                        size="small"
+                        color="primary"
+                        variant="outlined"
+                      />
+                    </Box>
+                  </CardContent>
+                  <CardActions>
+                    <Button 
+                      size="small" 
+                      color="primary" 
+                      fullWidth
+                      onClick={() => addToCart(item)}
+                    >
+                      Add to Cart
+                    </Button>
+                  </CardActions>
+                </Card>
+              </Grid>
+            ))
+          ) : (
+            <Box sx={{ textAlign: 'center', width: '100%', mt: 4 }}>
+              <Typography variant="h6" color="text.secondary">
+                {selectedCategory 
+                  ? `No items available in ${selectedCategory} category.`
+                  : 'No items available at the moment.'}
+              </Typography>
+            </Box>
+          )}
         </Grid>
 
         {/* Cart Dialog */}
@@ -409,14 +464,6 @@ const Dashboard = () => {
             </Button>
           </DialogActions>
         </Dialog>
-
-        {items.length === 0 && !loading && (
-          <Box sx={{ textAlign: 'center', mt: 4 }}>
-            <Typography variant="h6" color="text.secondary">
-              No items available at the moment.
-            </Typography>
-          </Box>
-        )}
       </Box>
     </Container>
   );
